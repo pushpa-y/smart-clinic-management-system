@@ -1,16 +1,29 @@
 package com.smartcare.clinic_management.service;
 
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.security.Keys;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import java.security.Key;
 import java.util.Date;
 
 @Service
 public class TokenService {
-    // In a real app, this would use a library like jjwt
+    @Value("${jwt.secret}")
+    private String secret;
+
+    // Criteria: Method to generate JWT token using email
     public String generateToken(String email) {
-        return "mock-jwt-token-for-" + email + "-valid-until-" + new Date(System.currentTimeMillis() + 3600000);
+        return Jwts.builder()
+                .setSubject(email)
+                .setIssuedAt(new Date())
+                .signWith(getSigningKey(), SignatureAlgorithm.HS256)
+                .compact();
     }
 
-    public boolean validateToken(String token) {
-        return token != null && token.startsWith("mock-jwt-token");
+    // Criteria: Return the signing key using configured secret
+    private Key getSigningKey() {
+        return Keys.hmacShaKeyFor(secret.getBytes());
     }
 }

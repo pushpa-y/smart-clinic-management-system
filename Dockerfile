@@ -1,14 +1,10 @@
-# Use OpenJDK 17 for the runtime
-FROM openjdk:17-jdk-slim
+# Stage 1: Build
+FROM maven:3.9.4-eclipse-temurin-21 AS build
+COPY . .
+RUN mvn clean package -DskipTests
 
-# Set the working directory inside the container
-WORKDIR /app
-
-# Copy the compiled jar file into the container
-COPY target/*.jar app.jar
-
-# Expose the port the app runs on
-EXPOSE 8080
-
-# Run the application
+# Stage 2: Runtime
+FROM eclipse-temurin:21-jre
+COPY --from=build /target/*.jar app.jar
+EXPOSE 8081
 ENTRYPOINT ["java", "-jar", "app.jar"]
